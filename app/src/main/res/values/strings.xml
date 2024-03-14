@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">doubletapp3</string>
+
+    <string-array name="priorities">
+        <item>Приоритет 1</item>
+        <item>Приоритет 2</item>
+        <item>Приоритет 3</item>
+    </string-array>
+</resources>
