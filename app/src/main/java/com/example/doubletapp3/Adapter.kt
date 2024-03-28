@@ -1,32 +1,28 @@
 package com.example.doubletapp3
 
 import Habit
-import android.app.Activity
-import android.app.Application
-import android.content.Context
-import android.content.Intent
-import android.location.GnssAntennaInfo.Listener
-import android.util.Log
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
+import com.example.doubletapp3.databinding.ListItemBinding
 
 
-class Adapter (private val habitsList: List<Habit>, val listener: ItemClickListener): RecyclerView.Adapter<Adapter.ViewHolder>() {
+class Adapter (private val habitsList: List<Habit>, private val listener: ItemClickListener): RecyclerView.Adapter<Adapter.ViewHolder>() {
 
     class ViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView)  {
-        val title: TextView = itemView.findViewById(R.id.title)
-        val description: TextView = itemView.findViewById(R.id.description)
-        val priority: TextView = itemView.findViewById(R.id.priority)
-        val type: TextView = itemView.findViewById(R.id.type)
-        val timing: TextView = itemView.findViewById(R.id.timing)
+        private val binding = ListItemBinding.bind(itemView)
 
-        fun bind(habit: Habit, listener: ItemClickListener) {
+        private val title: TextView = binding.title
+        private val description: TextView = binding.description
+        private val priority: TextView = binding.priority
+        private val type: TextView = binding.type
+        private val timing: TextView = binding.timing
+
+        @SuppressLint("SetTextI18n")
+        fun bind(habit: Habit) {
             title.text = habit.title
             description.text = habit.description
             priority.text = "Приоритет ${habit.priority + 1}"
@@ -44,7 +40,7 @@ class Adapter (private val habitsList: List<Habit>, val listener: ItemClickListe
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(habitsList[position], listener)
+        holder.bind(habitsList[position])
         holder.itemView.setOnClickListener { listener.onClick(habitsList[position], position)
         this.notifyItemChanged(position)}
     }
