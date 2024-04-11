@@ -1,7 +1,7 @@
 package com.example.doubletapp3
 
 import Habit
-import SharedViewModel
+import HabitsListViewModel
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
@@ -19,6 +19,7 @@ import com.example.doubletapp3.databinding.FragmentHabitsListBinding
 import Constants as const
 
 
+const val ARG_OBJECT = "object"
 
 class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
     private lateinit var binding: FragmentHabitsListBinding
@@ -26,7 +27,7 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
     private lateinit var message: TextView
     var keyRequested: Int = -1
 
-    private val viewModel: SharedViewModel by activityViewModels()
+    private val viewModel: HabitsListViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,24 +42,18 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
             keyRequested = getInt(const.KEY_HABIT_TYPE)
             when (keyRequested) {
                 0-> {
-                    recyclerView.adapter = viewModel.GOOD_LIST.value?.let { Adapter(it, this@FragmentHabitsList) }
+                    viewModel.GOOD_LIST.observe(viewLifecycleOwner, Observer {it ->
+                        recyclerView.adapter = it.let { Adapter(it, this@FragmentHabitsList) }
+                        disableMessage()
+                    })
                 }
                 1 -> {
-                    recyclerView.adapter = viewModel.BAD_LIST.value?.let { Adapter(it, this@FragmentHabitsList) }
-                }
+                    viewModel.BAD_LIST.observe(viewLifecycleOwner, Observer {it ->
+                        recyclerView.adapter = Adapter(it, this@FragmentHabitsList)
+                        disableMessage()
+                    })                }
             }
         }
-        viewModel.HABITS_LIST.observe(viewLifecycleOwner, Observer {
-            when (keyRequested) {
-                0 -> {
-                    recyclerView.adapter = viewModel.GOOD_LIST.value?.let { Adapter(it, this@FragmentHabitsList) }
-                }
-                1 -> {
-                    recyclerView.adapter = viewModel.BAD_LIST.value?.let { Adapter(it, this@FragmentHabitsList) }
-                }
-            }
-            disableMessage()
-        })
         message = binding.emptyMsg
     }
 

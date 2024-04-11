@@ -1,13 +1,20 @@
 package com.example.doubletapp3
 
+import HabitsListViewModel
 import Constants as const
 import android.content.Intent
+import android.graphics.ColorSpace.Model
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.doubletapp3.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationView
@@ -15,12 +22,18 @@ import com.google.android.material.navigation.NavigationView
 class ActivityMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var drawerLayout: DrawerLayout
+    public lateinit var viewModel: HabitsListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this, object: ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return HabitsListViewModel() as T
+            }
+        }).get(HabitsListViewModel::class.java)
         drawerLayout = binding.drawerLayout
         setSupportActionBar(binding.include.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

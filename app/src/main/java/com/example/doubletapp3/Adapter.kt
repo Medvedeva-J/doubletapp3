@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.doubletapp3.databinding.ListItemBinding
+import java.text.SimpleDateFormat
 
 
 class Adapter (private val habitsList: List<Habit>, private val listener: ItemClickListener): RecyclerView.Adapter<Adapter.ViewHolder>() {
@@ -18,15 +19,17 @@ class Adapter (private val habitsList: List<Habit>, private val listener: ItemCl
         private val title: TextView = binding.title
         private val description: TextView = binding.description
         private val priority: TextView = binding.priority
-        private val type: TextView = binding.type
+        //private val type: TextView = binding.type
+        private val edit_date: TextView = binding.editDate
         private val timing: TextView = binding.timing
 
-        @SuppressLint("SetTextI18n")
+        @SuppressLint("SetTextI18n", "SimpleDateFormat")
         fun bind(habit: Habit) {
             title.text = habit.title
             description.text = habit.description
-            priority.text = "Приоритет ${habit.priority + 1}"
-            type.text = habit.type
+            priority.text = "${habit.priority + 1}"
+            //type.text = habit.type
+            edit_date.text = SimpleDateFormat("yyyy-MM-dd HH:mm").format(habit.edit_date)
             timing.text = "${habit.repeat} раз/${habit.days} дней"
         }
     }
