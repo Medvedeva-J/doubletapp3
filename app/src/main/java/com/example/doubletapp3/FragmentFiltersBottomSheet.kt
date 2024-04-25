@@ -2,12 +2,14 @@ package com.example.doubletapp3
 
 import HabitsListViewModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.example.doubletapp3.databinding.FiltersSlideBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
@@ -16,7 +18,7 @@ class FragmentFiltersBottomSheet: Fragment() {
     lateinit var binding: FiltersSlideBinding
     lateinit var submitFilters: Button
 
-    private val viewModel: HabitsListViewModel by activityViewModels()
+    private val habitsListVM: HabitsListViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +54,7 @@ class FragmentFiltersBottomSheet: Fragment() {
         BottomSheetBehavior.from(binding.bottomSheet).apply {
             this.state = BottomSheetBehavior.STATE_COLLAPSED
         }
-        viewModel.filter(binding.findByName.text.toString(),
+        habitsListVM.filter(binding.findByName.text.toString(),
             binding.root.resources.getResourceName(
                 binding.filtersRadioGroup.checkedRadioButtonId).last().digitToInt())
     }

@@ -1,72 +1,69 @@
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.doubletapp3.Habit
+import com.example.doubletapp3.HabitsDB
 
-class HabitsListViewModel() : ViewModel() {
-    val HABITS_LIST: MutableLiveData<MutableList<Habit>> = MutableLiveData(mutableListOf())
-    val FILTERED_LIST: MutableLiveData<List<Habit>> = MutableLiveData(emptyList())
-    val BAD_LIST: MutableLiveData<List<Habit>> = MutableLiveData(emptyList())
-    val GOOD_LIST: MutableLiveData<List<Habit>> = MutableLiveData(emptyList())
-    var NAME_FILTER: String = ""
-    var DATA_SORT: Int = 1
+class HabitsListViewModel: ViewModel() {
+    var habitsList = MutableLiveData<MutableList<Habit>>()
+    var filteredList = MutableLiveData<List<Habit>>()
+    var badList = MutableLiveData<List<Habit>>()
+    var goodList = MutableLiveData<List<Habit>>()
+    var nameFilter: String = ""
+    var sortingFilter: Int = 1
 
-    fun add(habit: Habit) {
-        var list = HABITS_LIST.value
-        if (list != null) {
-            list.add(habit)
-        } else {
-            list = mutableListOf(habit)
-        }
-        HABITS_LIST.value = list!!
-        update()
+    init {
+        habitsList.value = mutableListOf()
+        filteredList.value = habitsList.value
     }
 
-    fun edit(position: Int, habit: Habit) {
-        val list = HABITS_LIST.value
-        list?.set(position, habit)
-        HABITS_LIST.value = list!!
-        update()
+    override fun onCleared() {
+        super.onCleared()
     }
 
-    fun get(): MutableList<Habit> {
-        return if (HABITS_LIST.value == null) {
-            mutableListOf()
-        } else {
-            HABITS_LIST.value!!
-        }
+    fun updateGoodList() {
+        goodList.value = filteredList.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.GOOD_HABIT }
     }
 
-    fun getHabit(ind: Int): Habit? {
-        return if (HABITS_LIST.value == null) {
-            HABITS_LIST.value?.get(ind)
-        } else {
-            null
-        }
+    fun updateBadList() {
+        badList.value = filteredList.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.BAD_HABIT }
     }
 
-    fun size(): Int {
-        return if (HABITS_LIST.value == null) {
-            0
-        } else {
-            HABITS_LIST.value!!.size
-        }
-    }
-
-    private fun update() {
-        val list = HABITS_LIST.value as List<Habit>
-        var filtered = list.filter { habit -> habit.title.contains(NAME_FILTER) }.sortedBy { habit -> habit.edit_date }
-        when (DATA_SORT) {
+    fun update() {
+        filteredList.value = habitsList.value?.filter { habit ->
+            habit.title.contains(nameFilter) }?.sortedBy { habit ->
+            habit.edit_date }
+        when (sortingFilter) {
             Constants.SORTING.NEW -> {
-                filtered = filtered.reversed()
+                filteredList.value = filteredList.value?.reversed()
             }
         }
-        FILTERED_LIST.value = filtered
-        BAD_LIST.value = FILTERED_LIST.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.BAD_HABIT }
-        GOOD_LIST.value = FILTERED_LIST.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.GOOD_HABIT }
+        updateGoodList()
+        updateBadList()
     }
 
-    fun filter(name: String, sorting: Int) {
-        NAME_FILTER = name
-        DATA_SORT = sorting
+    fun add(habit:Habit) {
+        habitsList.value?.add(habit)
         update()
+    }
+
+    fun replace(position: Int, input: Habit) {
+        habitsList.value?.set(position, input)
+        update()
+    }
+
+    fun delete(habit: Habit) {
+        habitsList.value?.remove(habit)
+        update()
+    }
+
+    fun filter(inputFilter: String, sorting: Int) {
+        nameFilter = inputFilter
+        sortingFilter = sorting
+        update()
+    }
+
+    fun <T> MutableLiveData<T>.notifyObserver() {
+        this.value = this.value
     }
 }

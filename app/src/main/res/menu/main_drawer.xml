@@ -5,8 +5,10 @@
 
     <group >
         <item android:title="Мои привычки"
-            android:id="@+id/home"/>
+            android:id="@+id/home"
+            android:checkable="true"/>
         <item android:title="О приложении"
-            android:id="@+id/about"/>
+            android:id="@+id/about"
+            android:checkable="true"/>
     </group>
 </menu>
