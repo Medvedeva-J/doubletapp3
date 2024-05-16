@@ -1,21 +1,31 @@
 package com.example.doubletapp3
 
 
-import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Habit::class], version = 1)
+@Database(entities = [HabitEntity::class], version = 1)
 abstract class HabitsDB: RoomDatabase() {
 
     companion object {
-        fun getDB(context: Context): HabitsDB{
+
+        @Volatile private var INSTANCE: HabitsDB? = null
+
+        fun getInstance(): HabitsDB{
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: buildDataBase().also { INSTANCE = it }
+            }
+        }
+
+        private fun buildDataBase(): HabitsDB{
             return Room.databaseBuilder(
-                context.applicationContext,
+                MyApplication.appContext,
                 HabitsDB::class.java,
                 "HABITS"
-            ).allowMainThreadQueries().build()
+            )
+                .allowMainThreadQueries()
+                .build()
         }
     }
 

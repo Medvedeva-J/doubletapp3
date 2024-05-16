@@ -1,10 +1,7 @@
 package com.example.doubletapp3
 
-import HabitViewModel
-import HabitsListViewModel
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,7 +11,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.doubletapp3.databinding.FragmentHabitsListBinding
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -27,14 +24,9 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
     private lateinit var binding: FragmentHabitsListBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var message: TextView
-    private lateinit var adapter: Adapter
-    var keyRequested: Int = -1
+    private var keyRequested: Int = -1
     private val habitsListVM: HabitsListViewModel by activityViewModels()
     private val habitVM: HabitViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,18 +46,18 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
             keyRequested = getInt(const.KEY_HABIT_TYPE)
             when (keyRequested) {
                 0-> {
-                    habitsListVM.goodList.observe(viewLifecycleOwner, Observer {
+                    habitsListVM.goodList.observe(viewLifecycleOwner) {
                         val adapter = getOrCreateAdapter(recyclerView)
                         adapter.updateItems(it)
                         disableMessage()
-                    })
+                    }
                 }
                 1 -> {
-                    habitsListVM.badList.observe(viewLifecycleOwner, Observer {
+                    habitsListVM.badList.observe(viewLifecycleOwner) {
                         val adapter = getOrCreateAdapter(recyclerView)
                         adapter.updateItems(it)
                         disableMessage()
-                    })
+                    }
                 }
             }
         }
@@ -75,17 +67,14 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
     }
 
     override fun onClick(habit: Habit, position: Int) {
-        val bundle: Bundle = Bundle()
+        val bundle = Bundle()
         bundle.putInt(const.KEY_REQUEST_CODE, const.REQUEST_HABIT_EDITED)
         bundle.putInt("item-pos", position)
-        val fragment = FragmentHabitInfo()
-        fragment.arguments = bundle
         habitVM.set(habit)
-        val a = parentFragmentManager.beginTransaction()
-        a.replace(R.id.main_container, fragment)
-        a.addToBackStack(null).commit()
+        findNavController().navigate(R.id.action_fragmentHome_to_fragmentHabitInfo, bundle)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onLongClick(habit: Habit) {
         val alertDialog = AlertDialog.Builder(context)
 
@@ -94,7 +83,7 @@ class FragmentHabitsList : Fragment(), Adapter.ItemClickListener {
             setMessage("Точно хотите удалить привычку?")
             setPositiveButton("Да") { _: DialogInterface?, _: Int ->
                 GlobalScope.launch(Dispatchers.IO) {
-                    (requireActivity() as ActivityMain).db.habitsDao().delete(habit)
+                    habit.id?.let { habitsListVM.removeHabit(it) }
                 }
             }
             setNegativeButton("Нет") { dialog, _ ->

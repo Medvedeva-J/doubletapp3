@@ -1,18 +1,18 @@
 package com.example.doubletapp3
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.doubletapp3.databinding.FragmentHomeBinding
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.tabs.TabLayoutMediator
 
 class FragmentHome : Fragment() {
 
-    lateinit var binding: FragmentHomeBinding
+    private lateinit var binding: FragmentHomeBinding
     private lateinit var vpAdapter: HabitTypeAdapter
     private lateinit var viewPager2: ViewPager2
 
@@ -21,6 +21,8 @@ class FragmentHome : Fragment() {
         arguments?.let {
         }
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,16 +41,13 @@ class FragmentHome : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater,container,false)
+        binding.fab.setOnClickListener{ goToHabitCreation() }
         return binding.root
     }
 
-    companion object {
-
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FragmentHome().apply {
-                arguments = Bundle().apply {
-                }
-            }
+    private fun goToHabitCreation() {
+        val bundle: Bundle = Bundle()
+        bundle.putInt(Constants.KEY_REQUEST_CODE, Constants.REQUEST_HABIT_CREATED)
+        findNavController().navigate(R.id.action_fragmentHome_to_fragmentHabitInfo, bundle)
     }
 }

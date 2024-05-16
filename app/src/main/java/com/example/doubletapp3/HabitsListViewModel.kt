@@ -1,32 +1,38 @@
+package com.example.doubletapp3
+
+import Constants
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.doubletapp3.Habit
-import com.example.doubletapp3.HabitsDB
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class HabitsListViewModel: ViewModel() {
-    var habitsList = MutableLiveData<MutableList<Habit>>()
-    var filteredList = MutableLiveData<List<Habit>>()
+    private val client = Client.getHttpClient()
+    private val habitServerAPI = Client.getHabitServerAPI(client)
+    private val habitsDao = HabitsDB.getInstance().habitsDao()
+
+    private var habitsList = MutableLiveData<MutableList<Habit>>()
+    private var filteredList = MutableLiveData<List<Habit>>()
     var badList = MutableLiveData<List<Habit>>()
     var goodList = MutableLiveData<List<Habit>>()
-    var nameFilter: String = ""
-    var sortingFilter: Int = 1
+    private var nameFilter: String = ""
+    private var sortingFilter: Int = 1
 
     init {
-        habitsList.value = mutableListOf()
+        loadHabit()
         filteredList.value = habitsList.value
     }
 
-    override fun onCleared() {
-        super.onCleared()
+    private fun updateGoodList() {
+        goodList.value = filteredList.value?.filter { habit -> habit.type == HabitType.GOOD }
     }
 
-    fun updateGoodList() {
-        goodList.value = filteredList.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.GOOD_HABIT }
-    }
-
-    fun updateBadList() {
-        badList.value = filteredList.value?.filter { habit -> habit.type == Constants.HABIT_TYPES.BAD_HABIT }
+    private fun updateBadList() {
+        badList.value = filteredList.value?.filter { habit -> habit.type == HabitType.BAD }
     }
 
     fun update() {
@@ -42,19 +48,8 @@ class HabitsListViewModel: ViewModel() {
         updateBadList()
     }
 
-    fun add(habit:Habit) {
-        habitsList.value?.add(habit)
-        update()
-    }
-
-    fun replace(position: Int, input: Habit) {
-        habitsList.value?.set(position, input)
-        update()
-    }
-
-    fun delete(habit: Habit) {
-        habitsList.value?.remove(habit)
-        update()
+    fun updateAllHabits(newList: List<HabitEntity>) {
+        habitsList.value = newList.map { it.toHabit() } as MutableList<Habit>
     }
 
     fun filter(inputFilter: String, sorting: Int) {
@@ -63,7 +58,65 @@ class HabitsListViewModel: ViewModel() {
         update()
     }
 
-    fun <T> MutableLiveData<T>.notifyObserver() {
-        this.value = this.value
+    private suspend fun loadFromServer(): APIResponse<Unit> {
+        return try {
+            val response = retryRequest { habitServerAPI.getHabits() }
+            response.forEach{
+                updateHabitInLocalDatabase(it.toEntity())
+            }
+            APIResponse.Success(data = Unit)
+        } catch (e: RuntimeException) {
+            APIResponse.Error(e)
+        }
+    }
+
+    private suspend fun removeFromServer(habit: Habit): APIResponse<Unit> {
+        return try {
+            retryRequest { habitServerAPI.removeHabit(HabitUidServer(habit.id!!)) }
+            habitsDao.delete(HabitEntity.fromHabit(habit))
+            APIResponse.Success(data = Unit)
+        } catch (e: RuntimeException) {
+            APIResponse.Error(e)
+        }
+    }
+
+    private fun loadHabit() {
+        viewModelScope.launch(CoroutineName("load habit")) {
+            loadFromServer()
+        }
+    }
+
+    private suspend fun <T> retryRequest(delay: Long = 1000, func: suspend () -> T): T {
+        val toast = Toast.makeText(MyApplication.appContext, "\"${func.javaClass.enclosingMethod?.name}\" caught an error. Next try in 1 sec", Toast.LENGTH_SHORT)
+        while(true) {
+            try {
+                return func()
+            } catch (e: Exception) {
+                Log.e("RetryRequest", func.javaClass.enclosingMethod?.name, e)
+                toast.show()
+            }
+            delay(delay)
+            toast.cancel()
+        }
+    }
+
+    private suspend fun updateHabitInLocalDatabase(habit: HabitEntity){
+        val habitFromDateBase = habit.id.let { habitsDao.findById(it) }
+        if (habitFromDateBase != null) {
+            if (habitFromDateBase.edit_date < habit.edit_date){
+                habitsDao.update(habit)
+            }
+        } else {
+            habitsDao.insert(habit)
+        }
+    }
+
+    suspend fun removeHabit(id: String){
+        viewModelScope.launch(CoroutineName("delete habit")){
+            val habit: Habit? = habitsDao.findById(id)?.toHabit()
+            if (habit !== null){
+                removeFromServer(habit)
+            }
+        }
     }
 }

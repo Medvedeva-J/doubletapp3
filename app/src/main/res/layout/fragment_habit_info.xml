@@ -32,21 +32,23 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="start"
-            android:layout_marginVertical="10dp">
+            android:layout_marginVertical="20dp">
 
             <Spinner
                 android:id="@+id/priority_selector"
-                android:layout_width="160dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:entries="@array/priorities"
                 android:layout_marginVertical="10dp"
                 android:layout_marginRight="40dp" />
 
             <RadioGroup
                 android:id="@+id/radioGroup"
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
                 android:paddingHorizontal="0dp"
                 android:checkedButton="@id/option2">
 
@@ -54,13 +56,15 @@
                     android:id="@+id/option1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/good_habit"/>
+                    android:layout_weight="1"
+                    android:text="@string/goodText"/>
 
                 <RadioButton
                     android:id="@+id/option2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/bad_habit" />
+                    android:layout_weight="1"
+                    android:text="@string/badText" />
 
             </RadioGroup>
 

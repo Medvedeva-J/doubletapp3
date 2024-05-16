@@ -2,25 +2,21 @@ package com.example.doubletapp3
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import java.nio.charset.CodingErrorAction.REPLACE
 
 @Dao
 interface HabitsDao {
-    @Query("SELECT * FROM habit")
-    fun getAll(): LiveData<List<Habit>>
+    @Query("SELECT * FROM HabitEntity")
+    fun getAll(): LiveData<List<HabitEntity>>
 
-    @Query("SELECT * FROM habit WHERE id LIKE :id")
-    fun finById(id: String): Habit
+    @Query("SELECT * FROM HabitEntity WHERE id LIKE :id")
+    fun findById(id: String): HabitEntity?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(habit: Habit)
+    suspend fun insert(habit: HabitEntity)
 
     @Update
-    suspend fun update(habit: Habit)
+    suspend fun update(habit: HabitEntity)
 
     @Delete
-    suspend fun delete(habit: Habit)
-
-    @Query("DELETE FROM habit")
-    fun deleteAll()
+    suspend fun delete(habit: HabitEntity)
 }

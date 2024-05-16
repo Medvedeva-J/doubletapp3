@@ -1,55 +1,52 @@
 package com.example.doubletapp3
 
-import Constants
-import HabitViewModel
-import HabitsListViewModel
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.view.View
-import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.ui.setupActionBarWithNavController
+import com.bumptech.glide.Glide
 import com.example.doubletapp3.databinding.ActivityMainBinding
-import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.*
 
 
-open class ActivityMain : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class ActivityMain : AppCompatActivity() {
+    private val imageLink: String = "https://tlum.ru/uploads/ca1c65ffaf112008d3b9697904492b78a168e10ceba237dc512819ece3409afc.jpeg"
     private lateinit var binding: ActivityMainBinding
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
-    lateinit var habitsListVM: HabitsListViewModel
-    lateinit var habitVM: HabitViewModel
-    lateinit var db: HabitsDB
+    private lateinit var habitsListVM: HabitsListViewModel
+    private lateinit var habitVM: HabitViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         drawerLayout = binding.drawerLayout
-        setSupportActionBar(binding.include.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_menu_24)
+        val hostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
-        val navigationView: NavigationView = findViewById(R.id.nav_view)
-        navigationView.setNavigationItemSelectedListener(this)
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container, FragmentHome()).commit()
-        navigationView.setCheckedItem(navigationView.menu.findItem(R.id.home))
+        navController = hostFragment.navController
 
-        db = HabitsDB.getDB(this)
-        val allHabits = db.habitsDao().getAll()
-        if (navigationView.checkedItem?.itemId == R.id.home)
+        appBarConfiguration = AppBarConfiguration(
+            navController.graph, binding.drawerLayout
+        )
+        binding.navView.setupWithNavController(navController)
+        setupActionBarWithNavController(navController, appBarConfiguration)
 
-        allHabits.observe(this@ActivityMain, Observer {
-            habitsListVM.habitsList.value = it as MutableList<Habit>
+        setContentView(binding.root)
+
+        HabitsDB.getInstance().habitsDao().getAll().observe(this@ActivityMain, Observer {
+            habitsListVM.updateAllHabits(it)
             habitsListVM.update()
         })
 
@@ -57,30 +54,15 @@ open class ActivityMain : AppCompatActivity(), NavigationView.OnNavigationItemSe
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return HabitsListViewModel() as T
             }
-        }).get(HabitsListViewModel::class.java)
-
+        })[HabitsListViewModel::class.java]
 
         habitVM = ViewModelProvider(this, object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return HabitViewModel(null) as T
+                return HabitViewModel() as T
             }
-        }).get(HabitViewModel::class.java)
-    }
+        })[HabitViewModel::class.java]
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        binding.include.toolbar.title = item.title
-        when (item.itemId) {
-            R.id.home -> {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_container, FragmentHome()).commit()
-            }
-            R.id.about -> {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_container, FragmentAbout()).commit()
-            }
-        }
-        drawerLayout.closeDrawer(GravityCompat.START)
-        return true
+        loadPicture()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -93,23 +75,18 @@ open class ActivityMain : AppCompatActivity(), NavigationView.OnNavigationItemSe
         return super.onOptionsItemSelected(item)
     }
 
-    fun goToHabitCreation(view: View) {
-        val a = supportFragmentManager.beginTransaction()
-        val bundle: Bundle = Bundle()
-        bundle.putInt(Constants.KEY_REQUEST_CODE, Constants.REQUEST_HABIT_CREATED)
-        val fragment = FragmentHabitInfo()
-        fragment.arguments = bundle
-        a.replace(R.id.main_container, fragment)
-        a.addToBackStack(null).commit()
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment)
+        return navController.navigateUp(appBarConfiguration) ||
+                super.onSupportNavigateUp()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        Log.e("AAA", "onSaveInstanceState")
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        Log.e("AAA", "onRestoreInstanceState")
+    private fun loadPicture(){
+        Glide.with(this)
+            .load(imageLink)
+            .centerCrop()
+            .override(120, 120)
+            .placeholder(R.drawable.ic_launcher_foreground)
+            .into(binding.navView.getHeaderView(0).findViewById(R.id.avatar_pic))
     }
 }
