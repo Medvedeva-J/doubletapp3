@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">doubletapp3</string>
+
+    <string name="edit_habit_title">Редактировать привычку</string>
+    <string name="create_habit_title">Создать привычку</string>
+
+    <string-array name="priorities">
+        <item>@string/hardText</item>
+        <item>@string/mediumText</item>
+        <item>@string/lowText</item>
+    </string-array>
+
+    <string-array name="types">
+        <item>@string/goodText</item>
+        <item>@string/badText</item>
+    </string-array>
+
+    <string name="hardText">Hard</string>
+    <string name="mediumText">Medium</string>
+    <string name="lowText">Low</string>
+    <string name="goodText">Good</string>
+    <string name="badText">Bad</string>
+    <string name="bad_left">В этот раз прощается. Осталось ещё %1s раз(а)</string>
+    <string name="bad_more">Хватит это делать</string>
+    <string name="good_more">You are breathtaking!</string>
+    <string name="good_left">Осталось ещё %1$s раз(а)</string>
+    <string name="default_text">default</string>
+</resources>

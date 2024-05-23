@@ -14,4 +14,6 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "doubletapp3"
-include ':app'
+include ':presentator'
+include ':data'
+include ':domain'
