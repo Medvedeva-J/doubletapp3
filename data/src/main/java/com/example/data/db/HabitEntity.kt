@@ -15,6 +15,7 @@ data class HabitEntity (
     var description: String,
     var priority: Int,
     var type: Int,
+    var color: Int,
     var repeat: Int,
     var days: Int,
     var editDate: Int,
@@ -31,7 +32,8 @@ data class HabitEntity (
                 priority = priority.ordinal,
                 description = description,
                 title = title,
-                doneDates = doneDates
+                doneDates = doneDates,
+                color = color!!
             )
         }
     }
@@ -45,6 +47,7 @@ data class HabitEntity (
         editDate = editDate,
         id = id,
         repeat = repeat,
-        doneDates = doneDates
+        doneDates = doneDates,
+        color = color
     )
 }

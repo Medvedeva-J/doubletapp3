@@ -1,5 +1,6 @@
 package com.example.data.network.data
 
+import android.graphics.Color
 import com.example.data.db.HabitEntity
 import com.example.domain.entity.Habit
 
@@ -9,6 +10,7 @@ data class HabitServer(
     var frequency: Int,
     var priority: Int,
     var date: Int,
+    var color: Int? = null,
     var type: Int,
     var title: String,
     var description: String,
@@ -26,7 +28,8 @@ data class HabitServer(
             date = habit.editDate,
             frequency = habit.repeat,
             uid = habit.id,
-            doneDates = habit.doneDates
+            doneDates = habit.doneDates,
+            color = habit.color
         )
     }
 
@@ -39,7 +42,8 @@ data class HabitServer(
         editDate = date,
         id = uid!!,
         repeat = frequency,
-        doneDates = doneDates
+        doneDates = doneDates,
+        color = color!!
     )
 
 }
